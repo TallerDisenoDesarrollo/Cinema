@@ -1,0 +1,50 @@
+{% extends 'cine/base.html' %}
+
+{% block title %}Listado de Reservas{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1 class="fw-bold text-primary">Listado de Reservas</h1>
+    <p class="text-muted">Consulta el estado y detalles de las reservas realizadas.</p>
+</div>
+<div class="card shadow">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle table-bordered table-hover">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Película</th>
+                        <th>Sala</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Boletos</th>
+                        <th>Estado</th>
+                        <th>Total Pagado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr>
+                        <td class="text-center">{{ reserva.id }}</td>
+                        <td>{{ reserva.pelicula }}</td>
+                        <td>{{ reserva.sala }}</td>
+                        <td>{{ reserva.nombre_cliente }}</td>
+                        <td>{{ reserva.fecha_reserva|date:"d M Y, H:i" }}</td>
+                        <td class="text-center">{{ reserva.cantidad_boletos }}</td>
+                        <td class="text-center">
+                            {% if reserva.pagado %}
+                            <span class="badge bg-success">Pagado</span>
+                            {% else %}
+                            <span class="badge bg-danger">No Pagado</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">${{ reserva.total_pagado }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

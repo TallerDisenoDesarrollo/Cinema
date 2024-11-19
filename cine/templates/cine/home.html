@@ -1,0 +1,29 @@
+{% extends 'cine/base.html' %}
+
+{% block title %}Cartelera{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1 class="fw-bold text-primary">Cartelera</h1>
+    <p class="text-muted">Explora las películas disponibles y realiza tu reserva fácilmente.</p>
+</div>
+<div class="row">
+    {% for pelicula in peliculas %}
+    <div class="col-md-4">
+        <div class="card mb-4 shadow">
+            {% if pelicula.imagen %}
+            <img src="{{ pelicula.imagen }}" class="card-img-top" alt="{{ pelicula.titulo }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title text-primary">{{ pelicula.titulo }}</h5>
+                <p class="card-text text-muted">{{ pelicula.descripcion|truncatewords:20 }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'detalle_pelicula' pelicula.id %}" class="btn btn-primary">Ver Más</a>
+                    <span class="badge bg-secondary">Duración: {{ pelicula.duracion }} min</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

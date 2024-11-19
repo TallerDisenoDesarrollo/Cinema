@@ -1,0 +1,36 @@
+{% extends 'cine/base.html' %}
+
+{% block title %}Resumen de Pago{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1 class="fw-bold text-primary">Resumen de Pago</h1>
+    <p class="text-muted">Revisa los detalles de tu compra antes de confirmar.</p>
+</div>
+<div class="card shadow">
+    <div class="card-body">
+        <h3 class="card-title text-center text-secondary mb-4">Detalles de la Reserva</h3>
+        <p><strong>Película:</strong> {{ reserva.pelicula }}</p>
+        <p><strong>Sala:</strong> {{ reserva.sala }}</p>
+        <p><strong>Cliente:</strong> {{ reserva.nombre_cliente }}</p>
+        <p><strong>Boletos:</strong> {{ reserva.cantidad_boletos }}</p>
+        <p><strong>Total Entradas:</strong> <span class="fw-bold text-success">${{ total_reserva }}</span></p>
+        <h4 class="mt-4 text-secondary">Productos de la Confitería:</h4>
+        <ul>
+            {% for producto in productos %}
+            <li>{{ producto.nombre }} - ${{ producto.precio }}</li>
+            {% endfor %}
+        </ul>
+        <p><strong>Total Confitería:</strong> <span class="fw-bold">${{ total_confiteria }}</span></p>
+        {% if descuento_aplicado > 0 %}
+        <p><strong>Descuento Aplicado:</strong> -<span class="fw-bold text-danger">${{ descuento_aplicado }}</span></p>
+        {% endif %}
+        <hr>
+        <h3 class="text-success">Total a Pagar: ${{ total_final }}</h3>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-success">Confirmar Pago</a>
+            <a href="/" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
