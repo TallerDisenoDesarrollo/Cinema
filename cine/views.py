@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Pelicula, Sala, Reserva
 from .forms import ReservaForm
@@ -127,19 +128,21 @@ from django.shortcuts import render, redirect
 from .forms import HorarioForm
 from .models import Horario
 
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Horario
+from .forms import HorarioForm
+
 def gestionar_horarios(request):
     if request.method == 'POST':
         form = HorarioForm(request.POST)
         if form.is_valid():
-            print("DEBUG: Formulario válido. Datos:", form.cleaned_data)  # Depuración
-            form.save()
-            return redirect('listar_horarios')
-        else:
-            print("DEBUG: Errores en el formulario:", form.errors)  # Depuración
+            form.save()  # Guarda el horario si es válido
+            return redirect('gestionar_horarios')
     else:
         form = HorarioForm()
 
-    return render(request, 'cine/gestionar_horarios.html', {'form': form})
+    horarios = Horario.objects.all()
+    return render(request, 'cine/gestionar_horarios.html', {'form': form, 'horarios': horarios})
 
 
 

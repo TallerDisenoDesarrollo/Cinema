@@ -1,14 +1,90 @@
-{% extends 'cine/base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Horarios</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">Gestionar Horarios</h1>
 
-{% block title %}Gestionar Horarios{% endblock %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4>Agregar Horario</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="pelicula">{{ form.pelicula.label }}</label>
+                        {{ form.pelicula }}
+                        {% if form.pelicula.errors %}
+                        <div class="text-danger">{{ form.pelicula.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="sala">{{ form.sala.label }}</label>
+                        {{ form.sala }}
+                        {% if form.sala.errors %}
+                        <div class="text-danger">{{ form.sala.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha">{{ form.fecha.label }}</label>
+                        {{ form.fecha }}
+                        {% if form.fecha.errors %}
+                        <div class="text-danger">{{ form.fecha.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="hora_inicio">{{ form.hora_inicio.label }}</label>
+                        {{ form.hora_inicio }}
+                        {% if form.hora_inicio.errors %}
+                        <div class="text-danger">{{ form.hora_inicio.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Guardar Horario</button>
+                </form>
+            </div>
+        </div>
 
-{% block content %}
-<div class="container mt-5">
-    <h1>Gestionar Horarios</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Guardar Horario</button>
-    </form>    
-</div>
-{% endblock %}
+        <h2 class="text-center mb-4">Horarios Existentes</h2>
+        <table class="table table-striped table-bordered text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Acciones</th>
+                    <th>Película</th>
+                    <th>Sala</th>
+                    <th>Fecha</th>
+                    <th>Hora de Inicio</th>
+                    <th>Hora de Fin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for horario in horarios %}
+                <tr>
+                    <td>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_horario" value="{{ horario.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Borrar</button>
+                        </form>
+                    </td>
+                    <td>{{ horario.pelicula.titulo }}</td>
+                    <td>{{ horario.sala.numero }}</td>
+                    <td>{{ horario.fecha }}</td>
+                    <td>{{ horario.hora_inicio }}</td>
+                    <td>{{ horario.hora_fin }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

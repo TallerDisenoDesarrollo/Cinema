@@ -57,38 +57,51 @@ class Sala(models.Model):
 from django.utils.timezone import now
 from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
-
+from datetime import datetime, time
 
 class Horario(models.Model):
     pelicula = models.ForeignKey('Pelicula', on_delete=models.CASCADE, related_name='horarios')
-    sala = models.ForeignKey(Sala, on_delete=models.CASCADE, related_name='horarios')
+    sala = models.ForeignKey('Sala', on_delete=models.CASCADE, related_name='horarios')
     fecha = models.DateField()
     hora_inicio = models.TimeField()
-    hora_fin = models.TimeField(blank=True, null=True)  # Se calculará automáticamente
+    hora_fin = models.TimeField(blank=True, null=True)
+
+    def clean(self):
+        # Validar que la fecha no sea None
+        if not self.fecha:
+            raise ValidationError("La fecha es un campo obligatorio.")
+
+        # Validar que la hora de inicio no sea None
+        if not self.hora_inicio:
+            raise ValidationError("La hora de inicio es un campo obligatorio.")
+
+        # Validar que la fecha no sea anterior a hoy
+        if self.fecha < datetime.now().date():
+            raise ValidationError("La fecha no puede ser anterior a la fecha actual.")
+
+        # Validar que la hora de inicio no esté entre las 00:00 (12 AM) y las 10:00 AM (hasta 10:00:59)
+        if time(0, 0) <= self.hora_inicio <= time(10, 0):
+            raise ValidationError("El horario no puede estar entre las 00:00 (12 AM) y las 10:00 AM.")
+
+        # Validar superposición de horarios
+        if self.hora_fin:
+            overlapping_horarios = Horario.objects.filter(
+                sala=self.sala,
+                fecha=self.fecha,
+                hora_inicio__lt=self.hora_fin,
+                hora_fin__gt=self.hora_inicio
+            ).exclude(id=self.id)
+
+            if overlapping_horarios.exists():
+                raise ValidationError("Ya existe un horario que se superpone en esta sala.")
 
     def save(self, *args, **kwargs):
-        # Calcula hora_fin sumando la duración de la película a hora_inicio
-        if self.hora_inicio and self.pelicula.duracion:
+        # Cálculo automático de hora_fin antes de guardar
+        if not self.hora_fin and self.hora_inicio and self.pelicula.duracion:
             hora_inicio_datetime = datetime.combine(self.fecha, self.hora_inicio)
-            duracion = timedelta(minutes=self.pelicula.duracion)  # Convierte minutos a un objeto timedelta
-            hora_fin_datetime = hora_inicio_datetime + duracion
-            self.hora_fin = hora_fin_datetime.time()  # Obtiene solo el tiempo
+            duracion = timedelta(minutes=self.pelicula.duracion)
+            self.hora_fin = (hora_inicio_datetime + duracion).time()
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.pelicula.titulo} - Sala {self.sala.numero} - {self.fecha} {self.hora_inicio} - {self.hora_fin}"
-    
-    def clean(self):
-        overlapping_horarios = Horario.objects.filter(
-            sala=self.sala,
-            fecha=self.fecha,
-            hora_inicio__lt=self.hora_fin,
-            hora_fin__gt=self.hora_inicio
-        ).exclude(id=self.id)  # Excluir el horario actual en caso de edición
-        if overlapping_horarios.exists():
-            raise ValidationError("Ya existe un horario que se superpone en esta sala.")
-        
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -98,17 +111,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 def clean(self):
-    if self.fecha_inicio is None or self.fecha_fin is None:
-        raise ValidationError("Debe especificar tanto la fecha de inicio como la fecha de fin.")
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.debug(f"sala={self.sala}, fecha={self.fecha}, hora_inicio={self.hora_inicio}, hora_fin={self.hora_fin}")
+
+    if not self.sala or not self.fecha or not self.hora_inicio or not self.hora_fin:
+        raise ValidationError("Todos los campos deben estar llenos antes de validar.")
 
     overlapping_horarios = Horario.objects.filter(
-        fecha_inicio__lte=self.fecha_fin,
-        fecha_fin__gte=self.fecha_inicio,
-    ).exclude(id=self.id)  # Excluirse a sí mismo en caso de edición
-
+        sala=self.sala,
+        fecha=self.fecha,
+        hora_inicio__lt=self.hora_fin,
+        hora_fin__gt=self.hora_inicio
+    ).exclude(id=self.id)
     if overlapping_horarios.exists():
-        raise ValidationError("El horario se superpone con otro.")
-
+        raise ValidationError("Ya existe un horario que se superpone en esta sala.")
 
 
 def save(self, *args, **kwargs):
